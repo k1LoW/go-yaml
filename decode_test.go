@@ -746,6 +746,32 @@ func TestDecoder(t *testing.T) {
 				},
 			},
 		},
+		{
+			"a:\n- b: 2\n c: 0",
+			struct {
+				A []Child
+			}{
+				[]Child{
+					Child{
+						B: 2,
+						C: 0,
+					},
+				},
+			},
+		},
+		{
+			"a:\n-\n b: 2\n c: 0",
+			struct {
+				A []Child
+			}{
+				[]Child{
+					Child{
+						B: 2,
+						C: 0,
+					},
+				},
+			},
+		},
 
 		// Anchors and aliases.
 		{
