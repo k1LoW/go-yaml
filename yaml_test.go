@@ -2,6 +2,8 @@ package yaml_test
 
 import (
 	"bytes"
+	"io"
+	"os"
 	"reflect"
 	"testing"
 
@@ -581,4 +583,55 @@ baz:
 			}
 		}
 	})
+}
+
+func TestUnmarshalMapSlice(t *testing.T) {
+	yamls := []string{"testdata/map.yml", "testdata/seq.yml"}
+
+	for i := 0; i < 1000; i++ {
+		for _, p := range yamls {
+			f, err := os.Open(p)
+			if err != nil {
+				t.Fatalf("%s (%d): %v", p, i, err)
+			}
+			b, err := io.ReadAll(f)
+			if err != nil {
+				_ = f.Close()
+				t.Fatalf("%s (%d): %v", p, i, err)
+			}
+			_ = f.Close()
+
+			s := struct {
+				Desc  string                   `yaml:"desc,omitempty"`
+				Steps []map[string]interface{} `yaml:"steps,omitempty"`
+			}{}
+			err = yaml.Unmarshal(b, &s)
+			if err == nil {
+				if len(s.Steps) == 0 {
+					t.Fatalf("%s (%d): invalid parse", p, i)
+				}
+				continue
+			}
+
+			m := struct {
+				Desc  string        `yaml:"desc,omitempty"`
+				Steps yaml.MapSlice `yaml:"steps,omitempty"`
+			}{}
+			if err := yaml.Unmarshal(b, &m); err != nil {
+				t.Fatalf("%s (%d): %v", p, i, err)
+			}
+			if len(m.Steps) == 0 {
+				t.Fatalf("%s (%d): invalid parse", p, i)
+			}
+			for _, s := range m.Steps {
+				if s.Value == nil {
+					t.Fatalf("%s (%d): invalid parse: %v", p, i, s)
+				}
+			}
+		}
+	}
+}
+
+func load() {
+
 }

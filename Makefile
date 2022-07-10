@@ -1,6 +1,6 @@
 .PHONY: test
 test:
-	go test -v -race ./...
+	go test -v -race ./... -run TestUnmarshalMapSlice
 
 .PHONY: cover
 cover:
